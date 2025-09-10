@@ -16,9 +16,14 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                     <x-nav-link :href="route('projects')" :active="request()->routeIs('projects')">
+                    <x-nav-link :href="route('projects')" :active="request()->routeIs('projects')">
                         {{ __('Projects') }}
                     </x-nav-link>
+
+                    <x-nav-link :href="route('tasks.index')" :active="request()->routeIs('tasks.index')">
+                        {{ __('tasks') }}
+                    </x-nav-link>
+
                 </div>
             </div>
 
@@ -47,7 +52,7 @@
                             @csrf
 
                             <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
+                                onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 {{ __('Log Out') }}
                             </x-dropdown-link>
@@ -93,7 +98,7 @@
                     @csrf
 
                     <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
+                        onclick="event.preventDefault();
                                         this.closest('form').submit();">
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>

@@ -12,7 +12,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $projects = Project::with('user')->get();
+        $projects = Project::with('user')->paginate(2);
         return view('project.index', compact('projects'));
     }
 
@@ -50,7 +50,9 @@ class ProjectController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $project = Project::with('tasks.user')->where('id', $id)
+            ->firstOrFail();
+        return view("project.edit", compact('project'));
     }
 
     /**
@@ -58,14 +60,25 @@ class ProjectController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validated = $request->validate([
+            'name' => ['nullable']
+        ]);
+
+        $project = Project::findOrFail($id);
+        $project->update($validated);
+
+        return redirect()->route('projects');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function delete(string $id)
     {
+        $project = Project::findOrFail($id);
+        $project->delete();
+        return redirect()->route('projects');
+
         //
     }
 }
