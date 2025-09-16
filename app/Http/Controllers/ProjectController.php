@@ -2,17 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreProjectRequest;
+use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
+use App\Models\User;
+use App\Services\ProjectService;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
+
+    public function __construct(protected ProjectService $projectService) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $projects = Project::with('user')->paginate(2);
+        $projects = $this->projectService->index();
         return view('project.index', compact('projects'));
     }
 
@@ -27,13 +34,9 @@ class ProjectController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProjectRequest $request)
     {
-        Project::create([
-            'name' => $request->name,
-            'user_id' => auth()->id()
-        ]);
-
+        $this->projectService->store($request->validated());
         return redirect()->route('projects');
     }
 
@@ -48,26 +51,23 @@ class ProjectController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Project $project)
     {
-        $project = Project::with('tasks.user')->where('id', $id)
-            ->firstOrFail();
+        $project = $project->load('task.user');
+        // $project = Project::with('tasks.user')->where('id', $id)
+        //     ->firstOrFail();
         return view("project.edit", compact('project'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateProjectRequest $request, string $id)
     {
-        $validated = $request->validate([
-            'name' => ['nullable']
-        ]);
+        $validated = $request->validated();
 
-        $project = Project::findOrFail($id);
-        $project->update($validated);
-
-        return redirect()->route('projects');
+        (new ProjectService())->update($validated, $id);
+        return response()->json();
     }
 
     /**
