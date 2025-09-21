@@ -12,6 +12,8 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use App\Exceptions\TaskException;
+use App\Exceptions\ProjectNotFoundException;
 
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -22,7 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->api(prepend: [
+            \App\Http\Middleware\SetLocale::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (Throwable $exception, Request $request) {
@@ -78,6 +82,20 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'message' => $exception->getMessage(),
                 ], 400);
+            }
+
+            if ($exception instanceof TaskException) {
+                return response()->json([
+                    'message' => $exception->getMessage(),
+                    'error' => 'TaskException'
+                ], $exception->getCode());
+            }
+
+            if ($exception instanceof ProjectNotFoundException) {
+                return response()->json([
+                    'message' => $exception->getMessage(),
+                    'error' => 'ProjectNotFoundException'
+                ], $exception->getCode());
             }
 
             return response()->json([
